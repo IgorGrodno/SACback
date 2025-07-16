@@ -115,7 +115,7 @@ public class AuthController {
                 .body(new MessageResponse("You've been signed out!"));
     }
 
-    @PostMapping("/newuserregister")
+    @PostMapping("/teatherregister")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
 
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
@@ -148,7 +148,7 @@ public class AuthController {
 
         Set<Role> roles = new HashSet<>();
 
-        roles.add(roleRepository.findByName(ERole.ROLE_USER).get());
+        roles.add(roleRepository.findByName(ERole.ROLE_TEACHER).get());
         user.setRoles(roles);
         userRepository.save(user);
 

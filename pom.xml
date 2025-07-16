@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
-	<artifactId>notebookBack</artifactId>
+	<artifactId>SACBack</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>notebookBack</name>
-	<description>notebookBack</description>
+	<name>SACBack</name>
+	<description>sacBack</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -115,7 +115,7 @@
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
-							<version>1.18.28</version>
+							<version>1.18.38</version>
 						</path>
 					</annotationProcessorPaths>
 				</configuration>
