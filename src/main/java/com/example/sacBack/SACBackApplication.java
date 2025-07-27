@@ -1,8 +1,8 @@
 package com.example.sacBack;
 
-import com.example.sacBack.security.models.ERole;
-import com.example.sacBack.security.models.Role;
-import com.example.sacBack.security.models.User;
+import com.example.sacBack.models.ntities.ERole;
+import com.example.sacBack.models.ntities.Role;
+import com.example.sacBack.models.ntities.User;
 import com.example.sacBack.repositories.RoleRepository;
 import com.example.sacBack.repositories.UserRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -33,9 +33,9 @@ public class SACBackApplication {
 				user.setUsername("admin");
 				user.setPassword(encoder.encode("admin"));
 				Set<Role> roles = new HashSet<>();
-				roles.add(roleRepository.findByName(ERole.valueOf("ROLE_ADMIN")).get());
-				roles.add(roleRepository.findByName(ERole.valueOf("ROLE_STUDENT")).get());
-				roles.add(roleRepository.findByName(ERole.valueOf("ROLE_TEACHER")).get());
+				roles.add(roleRepository.findByName(ERole.valueOf("ROLE_ADMIN")));
+				roles.add(roleRepository.findByName(ERole.valueOf("ROLE_STUDENT")));
+				roles.add(roleRepository.findByName(ERole.valueOf("ROLE_TEACHER")));
 				user.setRoles(roles);
 				userRepository.save(user);
 			}

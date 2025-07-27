@@ -1,4 +1,4 @@
-package com.example.sacBack.security.models;
+package com.example.sacBack.models.ntities;
 
 import jakarta.persistence.*;
 import lombok.Getter;

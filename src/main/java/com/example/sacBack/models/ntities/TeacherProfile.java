@@ -1,12 +1,15 @@
-package com.example.sacBack.security.models;
+package com.example.sacBack.models.ntities;
 
-import com.example.sacBack.models.ntities.Skill;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Getter
+@Setter
 public class TeacherProfile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

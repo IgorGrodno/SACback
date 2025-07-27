@@ -2,7 +2,7 @@ package com.example.sacBack.repositories;
 
 import java.util.Optional;
 
-import com.example.sacBack.security.models.User;
+import com.example.sacBack.models.ntities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

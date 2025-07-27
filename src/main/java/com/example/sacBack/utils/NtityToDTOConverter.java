@@ -2,9 +2,14 @@ package com.example.sacBack.utils;
 
 import com.example.sacBack.models.DTOs.SkillDTO;
 import com.example.sacBack.models.DTOs.TestStepDTO;
+import com.example.sacBack.models.DTOs.UserDTO;
 import com.example.sacBack.models.ntities.Skill;
 import com.example.sacBack.models.ntities.TestStep;
+import com.example.sacBack.models.ntities.User;
 import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 public class NtityToDTOConverter {
@@ -20,5 +25,15 @@ public class NtityToDTOConverter {
         testStepDTO.setId(testStep.getId());
         testStepDTO.setDescription(testStep.getDescription());
         return testStepDTO;
+    }
+
+    public UserDTO convertToDTO(User user) {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(user.getId());
+        userDTO.setUsername(user.getUsername());
+        Set<String> roles = new HashSet<>();
+        user.getRoles().forEach(role -> {roles.add(String.valueOf(role.getName()));});
+        userDTO.setRoles(roles);
+        return userDTO;
     }
 }

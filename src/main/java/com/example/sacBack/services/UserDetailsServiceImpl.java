@@ -1,7 +1,7 @@
-package com.example.sacBack.security.services;
+package com.example.sacBack.services;
 
 
-import com.example.sacBack.security.models.User;
+import com.example.sacBack.models.ntities.User;
 import com.example.sacBack.repositories.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

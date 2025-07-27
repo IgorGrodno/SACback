@@ -1,6 +1,5 @@
 package com.example.sacBack.models.ntities;
 
-import com.example.sacBack.security.models.TeacherProfile;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

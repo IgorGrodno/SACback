@@ -1,5 +1,6 @@
 package com.example.sacBack.services;
 
+import com.example.sacBack.models.DTOs.SkillDTO;
 import com.example.sacBack.models.DTOs.TestStepDTO;
 import com.example.sacBack.models.ntities.Skill;
 import com.example.sacBack.models.ntities.TestStep;
@@ -28,8 +29,12 @@ public class SkillService {
         this.ntityToDTOConverter = ntityToDTOConverter;
     }
 
-    private List<Skill> findAll() {
-        return skillRepository.findAll();
+    public List<SkillDTO> findAll() {
+        List<SkillDTO> result = new ArrayList<>();
+        skillRepository.findAll().forEach(skill -> {
+            result.add(ntityToDTOConverter.convertToDTO(skill));
+        });
+        return result;
     }
 
     private Optional<Skill> findById(Long id) {

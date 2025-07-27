@@ -1,11 +1,11 @@
-package com.example.sacBack.security.services;
+package com.example.sacBack.services;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.example.sacBack.security.models.User;
+import com.example.sacBack.models.ntities.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

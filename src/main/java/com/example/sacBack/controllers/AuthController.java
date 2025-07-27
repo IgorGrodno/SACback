@@ -1,19 +1,17 @@
 package com.example.sacBack.controllers;
 
-import com.example.sacBack.security.models.User;
+import com.example.sacBack.models.ntities.User;
 import com.example.sacBack.repositories.UserRepository;
 import com.example.sacBack.security.JWT.JwtUtils;
 import com.example.sacBack.security.request.LoginRequest;
 import com.example.sacBack.security.request.SignupRequest;
 import com.example.sacBack.security.respose.MessageResponse;
 import com.example.sacBack.security.respose.UserInfoResponse;
-import com.example.sacBack.security.services.UserDetailsImpl;
+import com.example.sacBack.services.UserDetailsImpl;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -42,7 +40,7 @@ public class AuthController {
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository,
-                         PasswordEncoder encoder, JwtUtils jwtUtils) {
+                          PasswordEncoder encoder, JwtUtils jwtUtils) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.encoder = encoder;
@@ -60,19 +58,24 @@ public class AuthController {
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-            ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
+
+            String jwt = jwtUtils.generateTokenFromUsername(userDetails.getUsername());
+
             logger.info("Generated JWT for user '{}'", userDetails.getUsername());
-            logger.info("Set-Cookie header: {}", jwtCookie.toString());
+
             List<String> roles = userDetails.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toList());
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                    .body(new UserInfoResponse(
-                            userDetails.getId(),
-                            userDetails.getUsername(),
-                            roles
-                    ));
+
+            // Возвращаем JWT в теле ответа
+            return ResponseEntity.ok(Map.of(
+                    "token", jwt,
+                    "type", "Bearer",
+                    "id", userDetails.getId(),
+                    "username", userDetails.getUsername(),
+                    "roles", roles
+            ));
+
         } catch (BadCredentialsException ex) {
             logger.warn("Authentication failed for user '{}'", loginRequest.getUsername());
             return ResponseEntity
@@ -93,11 +96,9 @@ public class AuthController {
 
     @PostMapping("/signout")
     public ResponseEntity<?> logoutUser() {
-        ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
-        logger.info("Clearing JWT cookie");
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(new MessageResponse("You've been signed out!"));
+        // При использовании авторизации через заголовок JWT, logout — это просто удаление токена на клиенте
+        logger.info("Logout requested - client should delete JWT");
+        return ResponseEntity.ok(new MessageResponse("Вы вышли из системы"));
     }
 
     @PostMapping("/register")

@@ -1,9 +1,9 @@
 package com.example.sacBack.controllers;
 
 
-import com.example.sacBack.security.models.User;
+import com.example.sacBack.models.DTOs.UserDTO;
+import com.example.sacBack.models.ntities.User;
 import com.example.sacBack.repositories.RoleRepository;
-import com.example.sacBack.repositories.UserRepository;
 import com.example.sacBack.security.respose.MessageResponse;
 import com.example.sacBack.services.UserService;
 import org.slf4j.Logger;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "http://localhost:4200/", maxAge = 600, allowCredentials = "true")
+@CrossOrigin(origins = "http://localhost:4200", maxAge = 600, allowCredentials = "true")
 @RestController
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ADMIN')")
@@ -23,17 +23,13 @@ public class AdminController {
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
    private final UserService userService;
-   private final RoleRepository roleRepository;
-   private final PasswordEncoder encoder;
 
     public AdminController(UserService userService, RoleRepository roleRepository, PasswordEncoder encoder) {
         this.userService = userService;
-        this.roleRepository = roleRepository;
-        this.encoder = encoder;
     }
 
     @GetMapping("/users")
-    public List<User> getAllUsers() {
+    public List<UserDTO> getAllUsers() {
         return userService.getAllUsers();
     }
 
@@ -42,5 +38,12 @@ public class AdminController {
         logger.info("Deleting user with id: " + id);
         userService.deleteUser(id);
         return ResponseEntity.ok(new MessageResponse("User deleted successfully!"));
+    }
+
+    @PutMapping("/user")
+    public ResponseEntity<?> updateUser(@RequestBody UserDTO user){
+        logger.info("Updating user with id: " + user.getId());
+        userService.updateUser(user);
+        return ResponseEntity.ok(new MessageResponse("User updated successfully!"));
     }
 }

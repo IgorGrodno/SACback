@@ -3,7 +3,8 @@ package com.example.sacBack.security;
 
 import com.example.sacBack.security.JWT.AuthEntryPointJwt;
 import com.example.sacBack.security.JWT.AuthTokenFilter;
-import com.example.sacBack.security.services.UserDetailsServiceImpl;
+import com.example.sacBack.security.JWT.JwtUtils;
+import com.example.sacBack.services.UserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -25,19 +26,20 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableMethodSecurity
 public class WebSecurityConfig {
-    final
-    UserDetailsServiceImpl userDetailsService;
-
+    final UserDetailsServiceImpl userDetailsService;
+    final JwtUtils jwtUtils;
     private final AuthEntryPointJwt unauthorizedHandler;
 
-    public WebSecurityConfig(UserDetailsServiceImpl userDetailsService, AuthEntryPointJwt unauthorizedHandler) {
+    public WebSecurityConfig(UserDetailsServiceImpl userDetailsService, JwtUtils jwtUtils,
+                             AuthEntryPointJwt unauthorizedHandler) {
         this.userDetailsService = userDetailsService;
+        this.jwtUtils = jwtUtils;
         this.unauthorizedHandler = unauthorizedHandler;
     }
 
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
-        return new AuthTokenFilter();
+        return new AuthTokenFilter(jwtUtils, userDetailsService);
     }
 
     @Bean

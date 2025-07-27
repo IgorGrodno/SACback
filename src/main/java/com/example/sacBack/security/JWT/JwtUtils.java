@@ -3,7 +3,7 @@ package com.example.sacBack.security.JWT;
 import java.security.Key;
 import java.util.Date;
 
-import com.example.sacBack.security.services.UserDetailsImpl;
+import com.example.sacBack.services.UserDetailsImpl;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -34,35 +34,6 @@ public class JwtUtils {
 
     @Value("${jwtClockSkewSec:60}") // по умолчанию 60 секунд
     private long jwtClockSkewSec;
-
-    public String getJwtFromCookies(HttpServletRequest request) {
-        Cookie cookie = WebUtils.getCookie(request, jwtCookieName);
-        if (cookie != null) {
-            return cookie.getValue();
-        }
-        return null;
-    }
-
-    public ResponseCookie generateJwtCookie(UserDetailsImpl userDetails) {
-        String jwt = generateTokenFromUsername(userDetails.getUsername());
-        return ResponseCookie.from(jwtCookieName, jwt)
-                .path("/")
-                .maxAge(jwtCookieMaxAge)
-                .httpOnly(true)
-                .secure(false)
-                .sameSite("Lax")
-                .build();
-    }
-
-    public ResponseCookie getCleanJwtCookie() {
-        return ResponseCookie.from(jwtCookieName, "")
-                .path("/")
-                .maxAge(0)
-                .httpOnly(true)
-                .secure(false)
-                .sameSite("Lax")
-                .build();
-    }
 
     public String generateTokenFromUsername(String username) {
         Date now = new Date();
