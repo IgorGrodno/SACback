@@ -8,16 +8,24 @@ import com.example.sacBack.models.ntities.TestStep;
 import com.example.sacBack.models.ntities.User;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
 public class NtityToDTOConverter {
+
     public SkillDTO convertToDTO (Skill skill) {
-        SkillDTO skillNameDTO = new SkillDTO();
-        skillNameDTO.setName(skill.getName());
-        skillNameDTO.setId(skill.getId());
-        return skillNameDTO;
+        SkillDTO skillDTO = new SkillDTO();
+        skillDTO.setName(skill.getName());
+        skillDTO.setId(skill.getId());
+        List<TestStepDTO> testStepDTOList = new ArrayList<>();
+        skill.getTestSteps().forEach(testStep -> {
+            testStepDTOList.add(convertToDTO(testStep));
+        });
+        skillDTO.setSteps(testStepDTOList);
+        return skillDTO;
     }
 
     public TestStepDTO convertToDTO(TestStep testStep) {

@@ -2,7 +2,6 @@ package com.example.sacBack.controllers;
 
 
 import com.example.sacBack.models.DTOs.UserDTO;
-import com.example.sacBack.models.ntities.User;
 import com.example.sacBack.repositories.RoleRepository;
 import com.example.sacBack.security.respose.MessageResponse;
 import com.example.sacBack.services.UserService;
@@ -19,12 +18,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ADMIN')")
-public class AdminController {
+public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
    private final UserService userService;
 
-    public AdminController(UserService userService, RoleRepository roleRepository, PasswordEncoder encoder) {
+    public UserController(UserService userService, RoleRepository roleRepository, PasswordEncoder encoder) {
         this.userService = userService;
     }
 

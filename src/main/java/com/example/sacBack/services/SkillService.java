@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -37,20 +38,32 @@ public class SkillService {
         return result;
     }
 
-    private Optional<Skill> findById(Long id) {
-        return skillRepository.findById(id);
+    public SkillDTO findById(Long id) {
+
+        return ntityToDTOConverter.convertToDTO(Objects.requireNonNull(skillRepository.findById(id).orElse(null)));
     }
 
-    public Skill create(Skill skill) {
-        return skillRepository.save(skill);
-    }
-
-    public Optional<Skill> update(Long id, Skill updatedSkill) {
-        return skillRepository.findById(id).map(existing -> {
-            existing.setName(updatedSkill.getName());
-            existing.setTestSteps(updatedSkill.getTestSteps());
-            return skillRepository.save(existing);
+    public SkillDTO create(SkillDTO skill) {
+        Skill newSkill = new Skill();
+        newSkill.setName(skill.getName());
+        List<TestStep> testSteps = new ArrayList<>();
+        skill.getSteps().forEach(testStepDTO -> {
+            testSteps.add(testStepRepository.findById(testStepDTO.getId()).orElse(null));
         });
+        newSkill.setTestSteps(testSteps);
+        return ntityToDTOConverter.convertToDTO(skillRepository.save(newSkill));
+    }
+
+    public Optional<Skill> update(Long id, SkillDTO updatedSkill) {
+        Skill skill = skillRepository.findById(id).orElse(null);
+        skill.setName(updatedSkill.getName());
+        List<TestStep> testSteps = new ArrayList<>();
+        updatedSkill.getSteps().forEach(stepDTO -> {
+            testSteps.add(testStepRepository.findById(stepDTO.getId()).orElse(null));
+        });
+        skill.setTestSteps(testSteps);
+        skillRepository.save(skill);
+        return Optional.of(skill);
     }
 
     public void delete(Long id) {
