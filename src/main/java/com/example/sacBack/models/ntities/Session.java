@@ -5,23 +5,24 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "teststeps")
-public class TestStep {
-
+@Table(name = "Sessions")
+public class Session {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    private Date startDate;
 
-    @ManyToMany(mappedBy = "testSteps",fetch = FetchType.LAZY)
-    private List<Skill> skills = new ArrayList<>();
+    private Boolean active;
+
+    @ElementCollection
+    @Column(name = "student_numbers", columnDefinition = "integer[]")
+    private List<Integer> studentNumbers;
 }
-

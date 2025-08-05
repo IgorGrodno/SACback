@@ -2,14 +2,12 @@ package com.example.sacBack.controllers;
 
 
 import com.example.sacBack.models.DTOs.UserDTO;
-import com.example.sacBack.repositories.RoleRepository;
 import com.example.sacBack.security.respose.MessageResponse;
 import com.example.sacBack.services.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,7 +21,7 @@ public class UserController {
 
    private final UserService userService;
 
-    public UserController(UserService userService, RoleRepository roleRepository, PasswordEncoder encoder) {
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 
@@ -34,14 +32,14 @@ public class UserController {
 
     @DeleteMapping("/deleteuser/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable long id){
-        logger.info("Deleting user with id: " + id);
+        logger.info("Deleting user with id: {}", id);
         userService.deleteUser(id);
         return ResponseEntity.ok(new MessageResponse("User deleted successfully!"));
     }
 
     @PutMapping("/user")
     public ResponseEntity<?> updateUser(@RequestBody UserDTO user){
-        logger.info("Updating user with id: " + user.getId());
+        logger.info("Updating user with id: {}", user.getId());
         userService.updateUser(user);
         return ResponseEntity.ok(new MessageResponse("User updated successfully!"));
     }

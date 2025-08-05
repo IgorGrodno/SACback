@@ -9,5 +9,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class TestStepDTO {
     private Long id;
-    private String description;
+    private String name;
+    private boolean canDelete;
 }

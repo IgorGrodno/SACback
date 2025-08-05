@@ -10,80 +10,93 @@ import com.example.sacBack.utils.NtityToDTOConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class SkillService {
 
     private final SkillRepository skillRepository;
     private final TestStepRepository testStepRepository;
-    private final NtityToDTOConverter ntityToDTOConverter;
+    private final NtityToDTOConverter converter;
 
-    @Autowired
-    public SkillService(SkillRepository skillRepository, TestStepRepository testStepRepository,
-                        NtityToDTOConverter ntityToDTOConverter) {
+    public SkillService(SkillRepository skillRepository,
+                        TestStepRepository testStepRepository,
+                        NtityToDTOConverter converter) {
         this.skillRepository = skillRepository;
         this.testStepRepository = testStepRepository;
-        this.ntityToDTOConverter = ntityToDTOConverter;
+        this.converter = converter;
     }
 
     public List<SkillDTO> findAll() {
-        List<SkillDTO> result = new ArrayList<>();
-        skillRepository.findAll().forEach(skill -> {
-            result.add(ntityToDTOConverter.convertToDTO(skill));
-        });
-        return result;
+        return skillRepository.findAll().stream()
+                .map(converter::convertToDTO)
+                .toList();
     }
 
     public SkillDTO findById(Long id) {
-
-        return ntityToDTOConverter.convertToDTO(Objects.requireNonNull(skillRepository.findById(id).orElse(null)));
+        Skill skill = skillRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Skill not found with id: " + id));
+        return converter.convertToDTO(skill);
     }
 
-    public SkillDTO create(SkillDTO skill) {
-        Skill newSkill = new Skill();
-        newSkill.setName(skill.getName());
-        List<TestStep> testSteps = new ArrayList<>();
-        skill.getSteps().forEach(testStepDTO -> {
-            testSteps.add(testStepRepository.findById(testStepDTO.getId()).orElse(null));
-        });
-        newSkill.setTestSteps(testSteps);
-        return ntityToDTOConverter.convertToDTO(skillRepository.save(newSkill));
-    }
+    public SkillDTO create(SkillDTO skillDTO) {
+        Skill skill = new Skill();
+        skill.setName(skillDTO.getName());
 
-    public Optional<Skill> update(Long id, SkillDTO updatedSkill) {
-        Skill skill = skillRepository.findById(id).orElse(null);
-        skill.setName(updatedSkill.getName());
-        List<TestStep> testSteps = new ArrayList<>();
-        updatedSkill.getSteps().forEach(stepDTO -> {
-            testSteps.add(testStepRepository.findById(stepDTO.getId()).orElse(null));
-        });
+        List<TestStep> testSteps = skillDTO.getSteps().stream()
+                .map(stepDTO -> testStepRepository.findById(stepDTO.getId())
+                        .orElseThrow(() -> new RuntimeException("TestStep not found: " + stepDTO.getId())))
+                .toList();
+
         skill.setTestSteps(testSteps);
-        skillRepository.save(skill);
-        return Optional.of(skill);
+
+        return converter.convertToDTO(skillRepository.save(skill));
+    }
+
+    public void update(Long id, SkillDTO updatedDTO) {
+        Skill skill = skillRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Skill not found with id: " + id));
+
+        skill.setName(updatedDTO.getName());
+
+        List<TestStep> steps = updatedDTO.getSteps().stream()
+                .map(stepDTO -> testStepRepository.findById(stepDTO.getId())
+                        .orElseThrow(() -> new RuntimeException("TestStep not found: " + stepDTO.getId())))
+                .collect(Collectors.toList());
+
+        skill.setTestSteps(steps);
+
+        converter.convertToDTO(skillRepository.save(skill));
     }
 
     public void delete(Long id) {
+        if (!skillRepository.existsById(id)) {
+            throw new RuntimeException("Skill not found with id: " + id);
+        }
         skillRepository.deleteById(id);
     }
 
     public List<TestStepDTO> getTestStepsDTO(Long skillId) {
-        List<TestStepDTO> results = new ArrayList<>();
-        skillRepository.findById(skillId).get().getTestSteps().forEach(testStep ->
-        {
-            results.add(ntityToDTOConverter.convertToDTO(testStep));
-        });
-        return results;
+        Skill skill = skillRepository.findById(skillId)
+                .orElseThrow(() -> new RuntimeException("Skill not found with id: " + skillId));
+
+        return skill.getTestSteps().stream()
+                .map(converter::convertToDTO)
+                .toList();
     }
 
-    public Skill setTestSteps(Long skillId, List<Long> testStepIds) {
-        Optional<Skill> skillOpt = skillRepository.findById(skillId);
+    public SkillDTO setTestSteps(Long skillId, List<Long> testStepIds) {
+        Skill skill = skillRepository.findById(skillId)
+                .orElseThrow(() -> new RuntimeException("Skill not found with id: " + skillId));
+
         List<TestStep> steps = testStepRepository.findAllById(testStepIds);
-        Skill skill = skillOpt.get();
+
+        if (steps.size() != testStepIds.size()) {
+            throw new RuntimeException("One or more TestSteps not found");
+        }
+
         skill.setTestSteps(steps);
-        return skillRepository.save(skill);
+        return converter.convertToDTO(skillRepository.save(skill));
     }
 }

@@ -1,5 +1,6 @@
 package com.example.sacBack.services;
 
+import com.example.sacBack.models.DTOs.TeacherProfileDTO;
 import com.example.sacBack.models.DTOs.UserDTO;
 import com.example.sacBack.models.ntities.*;
 import com.example.sacBack.repositories.RoleRepository;
@@ -13,67 +14,95 @@ import java.util.*;
 
 @Service
 public class UserService {
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final NtityToDTOConverter ntityToDTOConverter;
+    private final NtityToDTOConverter converter;
     private final TeacherProfileRepository teacherProfileRepository;
     private final StudentProfileRepository studentProfileRepository;
+    private final NtityToDTOConverter ntityToDTOConverter;
 
-    public UserService(UserRepository userRepository, RoleRepository roleRepository,
-                       NtityToDTOConverter ntityToDTOConverter, TeacherProfileRepository teacherProfileRepository,
-                       StudentProfileRepository studentProfileRepository) {
+    public UserService(UserRepository userRepository,
+                       RoleRepository roleRepository,
+                       NtityToDTOConverter converter,
+                       TeacherProfileRepository teacherProfileRepository,
+                       StudentProfileRepository studentProfileRepository, NtityToDTOConverter ntityToDTOConverter) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
-        this.ntityToDTOConverter = ntityToDTOConverter;
+        this.converter = converter;
         this.teacherProfileRepository = teacherProfileRepository;
         this.studentProfileRepository = studentProfileRepository;
+        this.ntityToDTOConverter = ntityToDTOConverter;
     }
-
 
     public List<UserDTO> getAllUsers() {
-        List<UserDTO> usersDTO = new ArrayList<>();
-        userRepository.findAll().forEach(user -> {usersDTO.add(ntityToDTOConverter.convertToDTO(user));});
-        return usersDTO;
+        return userRepository.findAll().stream()
+                .map(converter::convertToDTO)
+                .toList();
     }
 
-    public User getUserById(long id) {return userRepository.getReferenceById(id);}
+    public User getUserById(long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+    }
 
-    public void deleteUser(long id){
+    public void deleteUser(long id) {
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("User not found with id: " + id);
+        }
         userRepository.deleteById(id);
     }
 
-    public User saveUser(User user) {
-        return userRepository.save(user);
-    }
+    public void updateUser(UserDTO userDTO) {
+        User user = userRepository.findById(userDTO.getId())
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userDTO.getId()));
 
-    public User updateUser(UserDTO user) {
-        User oldUser = userRepository.getReferenceById(user.getId());
-        oldUser.setUsername(user.getUsername());
+        user.setUsername(userDTO.getUsername());
         Set<Role> roles = new HashSet<>();
-        user.getRoles().forEach(role -> {
-            roles.add(roleRepository.findByName(ERole.valueOf(role)));
-            if(Objects.equals(role, "ROLE_TEACHER") &&oldUser.getTeacherProfile()==null){
-                TeacherProfile teacherProfile = new TeacherProfile();
-                teacherProfile.setUser(oldUser);
-                teacherProfileRepository.save(teacherProfile);
-                oldUser.setTeacherProfile(teacherProfile);
+
+        for (String roleStr : userDTO.getRoles()) {
+            ERole eRole = ERole.valueOf(roleStr);
+            Role role = roleRepository.findByName(eRole);
+            roles.add(role);
+
+            if (eRole == ERole.ROLE_TEACHER && user.getTeacherProfile() == null) {
+                createTeacherProfileForUser(user);
             }
-            if (Objects.equals(role, "ROLE_STUDENT") && oldUser.getStudentProfile() == null) {
-                StudentProfile studentProfile = new StudentProfile();
-                studentProfile.setUser(oldUser);
-                studentProfileRepository.save(studentProfile);
-                oldUser.setStudentProfile(studentProfile);
+
+            if (eRole == ERole.ROLE_STUDENT && user.getStudentProfile() == null) {
+                createStudentProfileForUser(user);
             }
-        });
-        oldUser.setRoles(roles);
-        return userRepository.save(oldUser);
+        }
+
+        user.setRoles(roles);
+
+        converter.convertToDTO(userRepository.save(user));
     }
 
-    public TeacherProfile getTeacherProfileById(long id) {
-       return userRepository.getReferenceById(id).getTeacherProfile();
+    private void createTeacherProfileForUser(User user) {
+        TeacherProfile profile = new TeacherProfile();
+        profile.setUser(user);
+        teacherProfileRepository.save(profile);
+        user.setTeacherProfile(profile);
     }
 
-    public StudentProfile getStudentProfileById(long id) {
-        return userRepository.getReferenceById(id).getStudentProfile();
+    private void createStudentProfileForUser(User user) {
+        StudentProfile profile = new StudentProfile();
+        profile.setUser(user);
+        studentProfileRepository.save(profile);
+        user.setStudentProfile(profile);
+    }
+
+    public TeacherProfileDTO getTeacherProfileByUserId(Long id) {
+        User user = getUserById(id);
+        return ntityToDTOConverter.convertToDTO(user.getTeacherProfile());
+    }
+
+    public void save(User user) {
+        userRepository.save(user);
+    }
+
+    public Optional<User> getUserByUserName(String username) {
+        return userRepository.findByUsername(username);
     }
 }

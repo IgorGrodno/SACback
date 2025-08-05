@@ -1,18 +1,21 @@
 package com.example.sacBack.controllers;
 
+import com.example.sacBack.models.DTOs.SkillDTO;
+import com.example.sacBack.models.DTOs.TeacherProfileDTO;
 import com.example.sacBack.models.ntities.User;
 import com.example.sacBack.repositories.UserRepository;
 import com.example.sacBack.security.JWT.JwtUtils;
 import com.example.sacBack.security.request.LoginRequest;
 import com.example.sacBack.security.request.SignupRequest;
 import com.example.sacBack.security.respose.MessageResponse;
-import com.example.sacBack.security.respose.UserInfoResponse;
 import com.example.sacBack.services.UserDetailsImpl;
+import com.example.sacBack.services.UserService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,7 +28,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 600, allowCredentials = "true")
 @RestController
@@ -33,18 +35,19 @@ import java.util.stream.Collectors;
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
-    private final UserRepository userRepository;
     private final PasswordEncoder encoder;
     private final JwtUtils jwtUtils;
+    private final UserService userService;
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
+
     public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository,
-                          PasswordEncoder encoder, JwtUtils jwtUtils) {
+                          PasswordEncoder encoder, JwtUtils jwtUtils, UserService userService) {
         this.authenticationManager = authenticationManager;
-        this.userRepository = userRepository;
         this.encoder = encoder;
         this.jwtUtils = jwtUtils;
+        this.userService = userService;
     }
 
     @PostMapping("/signin")
@@ -65,7 +68,7 @@ public class AuthController {
 
             List<String> roles = userDetails.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.toList());
+                    .toList();
 
             // Возвращаем JWT в теле ответа
             return ResponseEntity.ok(Map.of(
@@ -103,7 +106,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+        if (userService.getUserByUserName(signUpRequest.getUsername()).isEmpty()) {
             logger.info("Username already exists");
             return ResponseEntity.badRequest().body(
                     Map.of(
@@ -117,8 +120,8 @@ public class AuthController {
                 signUpRequest.getUsername(),
                 encoder.encode(signUpRequest.getPassword())
         );
-        userRepository.save(user);
-        logger.info("User created successfully: " + user.getUsername());
+        userService.save(user);
+        logger.info("User created successfully: {}", user.getUsername());
         return ResponseEntity.ok(
                 Map.of(
                         "success", true,
@@ -127,4 +130,7 @@ public class AuthController {
                 )
         );
     }
+
+
+
 }
