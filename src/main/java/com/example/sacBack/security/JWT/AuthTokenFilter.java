@@ -32,17 +32,10 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         String headerAuth = request.getHeader("Authorization");
-
-        logger.info("Authorization header: " + headerAuth);
-
         if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
             String jwt = headerAuth.substring(7);
-            logger.info("JWT token: " + jwt);
-
             if (jwtUtils.validateJwtToken(jwt)) {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
-                logger.info("JWT valid for user: " + username);
-
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails,
@@ -52,8 +45,6 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                logger.info("Authentication set in SecurityContext: " + SecurityContextHolder.getContext().getAuthentication());
-
             }
         }
 

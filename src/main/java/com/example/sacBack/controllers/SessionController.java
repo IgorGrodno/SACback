@@ -3,12 +3,15 @@ package com.example.sacBack.controllers;
 import com.example.sacBack.models.ntities.Session;
 import com.example.sacBack.services.SessionService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:4200", maxAge = 600, allowCredentials = "true")
 @RestController
 @RequestMapping("/api/sessions")
+@PreAuthorize("hasRole('ADMIN')")
 public class SessionController {
 
     private final SessionService sessionService;
@@ -49,10 +52,10 @@ public class SessionController {
     }
 
     @GetMapping("/active")
-    public ResponseEntity<Session> getActiveSession() {
-        return sessionService.findActive()
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<List<Session>> getActiveSessions() {
+        List<Session> activeSessions = sessionService.findActive();
+        return ResponseEntity.ok(activeSessions);
     }
+
 }
 

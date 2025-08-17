@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/skills")
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 600, allowCredentials = "true")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("isAuthenticated()")
 public class SkillController {
 
     private static final Logger logger = LoggerFactory.getLogger(SkillController.class);
@@ -32,7 +32,7 @@ public class SkillController {
 
     @GetMapping("/{id}")
     public ResponseEntity<SkillDTO> getSkillById(@PathVariable long id) {
-        return ResponseEntity.ok(skillService.findById(id));
+        return ResponseEntity.ok(skillService.findDTOById(id));
     }
 
     @PostMapping
@@ -56,4 +56,8 @@ public class SkillController {
         return ResponseEntity.ok(new ApiResponse(true, "Skill deleted successfully!"));
     }
 
+    @GetMapping("user/{id}")
+    public ResponseEntity<List<SkillDTO>> getSkillsByUserProfileId(@PathVariable long id) {
+        return ResponseEntity.ok(skillService.getSkillDTOsByUserProfileId(id));
+    }
 }

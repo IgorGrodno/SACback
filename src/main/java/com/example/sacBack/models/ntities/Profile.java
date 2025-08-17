@@ -10,7 +10,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class TeacherProfile {
+public class Profile {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -18,6 +18,10 @@ public class TeacherProfile {
     @OneToOne
     @MapsId
     private User user;
+
+    private String firstName;
+    private String secondName;
+    private String fatherName;
 
     @ManyToMany(fetch = FetchType.LAZY)
     private List<Skill> skills = new ArrayList<>();

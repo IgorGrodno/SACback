@@ -1,15 +1,19 @@
 package com.example.sacBack.services;
 
+import com.example.sacBack.controllers.AuthController;
 import com.example.sacBack.models.DTOs.SkillDTO;
 import com.example.sacBack.models.DTOs.TestStepDTO;
 import com.example.sacBack.models.ntities.Skill;
 import com.example.sacBack.models.ntities.TestStep;
 import com.example.sacBack.repositories.SkillRepository;
+import com.example.sacBack.repositories.ProfileRepository;
 import com.example.sacBack.repositories.TestStepRepository;
-import com.example.sacBack.utils.NtityToDTOConverter;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.sacBack.utils.EntityToDTOConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,14 +22,18 @@ public class SkillService {
 
     private final SkillRepository skillRepository;
     private final TestStepRepository testStepRepository;
-    private final NtityToDTOConverter converter;
+    private final EntityToDTOConverter converter;
+    private final ProfileRepository teacherProfileRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     public SkillService(SkillRepository skillRepository,
                         TestStepRepository testStepRepository,
-                        NtityToDTOConverter converter) {
+                        EntityToDTOConverter converter, ProfileRepository teacherProfileRepository) {
         this.skillRepository = skillRepository;
         this.testStepRepository = testStepRepository;
         this.converter = converter;
+        this.teacherProfileRepository = teacherProfileRepository;
     }
 
     public List<SkillDTO> findAll() {
@@ -34,10 +42,15 @@ public class SkillService {
                 .toList();
     }
 
-    public SkillDTO findById(Long id) {
+    public SkillDTO findDTOById(Long id) {
         Skill skill = skillRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Skill not found with id: " + id));
         return converter.convertToDTO(skill);
+    }
+
+    public Skill findById(Long id) {
+        return skillRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Skill not found with id: " + id));
     }
 
     public SkillDTO create(SkillDTO skillDTO) {
@@ -98,5 +111,15 @@ public class SkillService {
 
         skill.setTestSteps(steps);
         return converter.convertToDTO(skillRepository.save(skill));
+    }
+
+    public List<SkillDTO> getSkillDTOsByUserProfileId(Long id) {
+        List<Skill> skills = teacherProfileRepository.findById(id).orElseThrow().getSkills();
+        List<SkillDTO> skillDTOs = new ArrayList<>();
+        for (Skill skill : skills) {
+            skillDTOs.add(converter.convertToDTO(skill));
+        }
+        logger.warn(skillDTOs.toString());
+        return skillDTOs;
     }
 }

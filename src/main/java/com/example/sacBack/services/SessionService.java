@@ -34,6 +34,8 @@ public class SessionService {
                 .map(existing -> {
                     existing.setStartDate(updatedSession.getStartDate());
                     existing.setStudentNumbers(updatedSession.getStudentNumbers());
+                    existing.setEndDate(updatedSession.getEndDate());
+                    existing.setActive(updatedSession.getActive());
                     return existing;
                 });
     }
@@ -42,7 +44,8 @@ public class SessionService {
         sessionRepository.deleteById(id);
     }
 
-    public Optional<Session> findActive(){
-        return sessionRepository.findByActiveTrue();
+    public List<Session> findActive() {
+        return sessionRepository.findAllByActiveTrue();
     }
+
 }

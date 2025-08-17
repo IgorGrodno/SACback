@@ -19,6 +19,7 @@ public class Skill {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(columnDefinition = "TEXT")
     private String name;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -31,6 +32,6 @@ public class Skill {
     private List<TestStep> testSteps = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
-    private List<TeacherProfile> teacherProfiles = new ArrayList<>();
+    private List<Profile> teacherProfiles = new ArrayList<>();
 }
 

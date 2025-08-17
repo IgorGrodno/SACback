@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/steps")
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 600, allowCredentials = "true")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("isAuthenticated()")
 public class StepController {
 
     private static final Logger logger = LoggerFactory.getLogger(StepController.class);

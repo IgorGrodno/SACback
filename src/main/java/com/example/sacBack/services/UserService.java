@@ -1,13 +1,13 @@
 package com.example.sacBack.services;
 
-import com.example.sacBack.models.DTOs.TeacherProfileDTO;
+import com.example.sacBack.models.DTOs.ProfileDTO;
 import com.example.sacBack.models.DTOs.UserDTO;
 import com.example.sacBack.models.ntities.*;
 import com.example.sacBack.repositories.RoleRepository;
 import com.example.sacBack.repositories.StudentProfileRepository;
-import com.example.sacBack.repositories.TeacherProfileRepository;
+import com.example.sacBack.repositories.ProfileRepository;
 import com.example.sacBack.repositories.UserRepository;
-import com.example.sacBack.utils.NtityToDTOConverter;
+import com.example.sacBack.utils.EntityToDTOConverter;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -17,22 +17,18 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final NtityToDTOConverter converter;
-    private final TeacherProfileRepository teacherProfileRepository;
-    private final StudentProfileRepository studentProfileRepository;
-    private final NtityToDTOConverter ntityToDTOConverter;
+    private final EntityToDTOConverter converter;
+    private final EntityToDTOConverter entityToDTOConverter;
 
     public UserService(UserRepository userRepository,
                        RoleRepository roleRepository,
-                       NtityToDTOConverter converter,
-                       TeacherProfileRepository teacherProfileRepository,
-                       StudentProfileRepository studentProfileRepository, NtityToDTOConverter ntityToDTOConverter) {
+                       EntityToDTOConverter converter,
+                       ProfileRepository teacherProfileRepository,
+                       StudentProfileRepository studentProfileRepository, ProfileRepository profileRepository, EntityToDTOConverter entityToDTOConverter) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.converter = converter;
-        this.teacherProfileRepository = teacherProfileRepository;
-        this.studentProfileRepository = studentProfileRepository;
-        this.ntityToDTOConverter = ntityToDTOConverter;
+        this.entityToDTOConverter = entityToDTOConverter;
     }
 
     public List<UserDTO> getAllUsers() {
@@ -64,43 +60,27 @@ public class UserService {
             ERole eRole = ERole.valueOf(roleStr);
             Role role = roleRepository.findByName(eRole);
             roles.add(role);
-
-            if (eRole == ERole.ROLE_TEACHER && user.getTeacherProfile() == null) {
-                createTeacherProfileForUser(user);
-            }
-
-            if (eRole == ERole.ROLE_STUDENT && user.getStudentProfile() == null) {
-                createStudentProfileForUser(user);
-            }
         }
-
         user.setRoles(roles);
-
         converter.convertToDTO(userRepository.save(user));
     }
 
-    private void createTeacherProfileForUser(User user) {
-        TeacherProfile profile = new TeacherProfile();
-        profile.setUser(user);
-        teacherProfileRepository.save(profile);
-        user.setTeacherProfile(profile);
-    }
-
-    private void createStudentProfileForUser(User user) {
-        StudentProfile profile = new StudentProfile();
-        profile.setUser(user);
-        studentProfileRepository.save(profile);
-        user.setStudentProfile(profile);
-    }
-
-    public TeacherProfileDTO getTeacherProfileByUserId(Long id) {
-        User user = getUserById(id);
-        return ntityToDTOConverter.convertToDTO(user.getTeacherProfile());
+    public ProfileDTO getProfileByUserId(Long id) {
+        return entityToDTOConverter.convertToDTO(userRepository.findById(id).get().getProfile());
     }
 
     public void save(User user) {
+        if (user.getId() == null || !userRepository.existsById(user.getId())) {
+            if (user.getProfile() == null) {
+                Profile profile = new Profile();
+                profile.setUser(user);
+                user.setProfile(profile);
+            }
+        }
         userRepository.save(user);
     }
+
+
 
     public Optional<User> getUserByUserName(String username) {
         return userRepository.findByUsername(username);

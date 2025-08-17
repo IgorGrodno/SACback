@@ -1,7 +1,5 @@
 package com.example.sacBack.controllers;
 
-import com.example.sacBack.models.DTOs.SkillDTO;
-import com.example.sacBack.models.DTOs.TeacherProfileDTO;
 import com.example.sacBack.models.ntities.User;
 import com.example.sacBack.repositories.UserRepository;
 import com.example.sacBack.security.JWT.JwtUtils;
@@ -15,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -99,15 +96,14 @@ public class AuthController {
 
     @PostMapping("/signout")
     public ResponseEntity<?> logoutUser() {
-        // При использовании авторизации через заголовок JWT, logout — это просто удаление токена на клиенте
         logger.info("Logout requested - client should delete JWT");
         return ResponseEntity.ok(new MessageResponse("Вы вышли из системы"));
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-        if (userService.getUserByUserName(signUpRequest.getUsername()).isEmpty()) {
-            logger.info("Username already exists");
+        if (userService.getUserByUserName(signUpRequest.getUsername()).isPresent()) {
+            logger.info("Username already exists: {}", signUpRequest.getUsername());
             return ResponseEntity.badRequest().body(
                     Map.of(
                             "success", false,
@@ -116,12 +112,15 @@ public class AuthController {
                     )
             );
         }
+
         User user = new User(
                 signUpRequest.getUsername(),
                 encoder.encode(signUpRequest.getPassword())
         );
+
         userService.save(user);
         logger.info("User created successfully: {}", user.getUsername());
+
         return ResponseEntity.ok(
                 Map.of(
                         "success", true,
@@ -130,6 +129,7 @@ public class AuthController {
                 )
         );
     }
+
 
 
 

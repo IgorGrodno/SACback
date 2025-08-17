@@ -38,10 +38,7 @@ public class User {
     private Set<Role> roles = new HashSet<>();
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private StudentProfile studentProfile;
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private TeacherProfile teacherProfile;
+    private Profile profile;
 
     public User() {
     }

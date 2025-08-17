@@ -14,7 +14,7 @@ import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 600, allowCredentials = "true")
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api/users")
 @PreAuthorize("hasRole('ADMIN')")
 public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
@@ -25,19 +25,21 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/users")
+    @GetMapping
     public List<UserDTO> getAllUsers() {
-        return userService.getAllUsers();
+        List<UserDTO> users = userService.getAllUsers();
+        logger.info("Get all users: {}", users.size());
+        return users;
     }
 
-    @DeleteMapping("/deleteuser/{id}")
+    @DeleteMapping("{id}")
     public ResponseEntity<?> deleteUser(@PathVariable long id){
         logger.info("Deleting user with id: {}", id);
         userService.deleteUser(id);
         return ResponseEntity.ok(new MessageResponse("User deleted successfully!"));
     }
 
-    @PutMapping("/user")
+    @PutMapping()
     public ResponseEntity<?> updateUser(@RequestBody UserDTO user){
         logger.info("Updating user with id: {}", user.getId());
         userService.updateUser(user);
